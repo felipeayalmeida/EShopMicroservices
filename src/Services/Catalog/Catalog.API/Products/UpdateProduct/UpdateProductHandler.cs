@@ -27,7 +27,7 @@ internal class UpdateProductCommandHandler(IDocumentSession session, ILogger<Upd
     {
         logger.LogInformation("UpdateProductCommandHandler.Handle called with {@Command}", command);
 
-        var product = await session.LoadAsync<Product>(command.Id, cancellationToken) ?? throw new ProductNotFoundException();
+        var product = await session.LoadAsync<Product>(command.Id, cancellationToken) ?? throw new ProductNotFoundException(command.Id);
 
         product.Name = command.Name;
         product.Category = command.Category;
