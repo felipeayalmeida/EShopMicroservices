@@ -1,10 +1,12 @@
+using Discount.gRPC;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+//Application Services
 var assembly = typeof(Program).Assembly;
-
 builder.Services.AddCarter();
-
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssembly(assembly);
@@ -12,8 +14,7 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
-builder.Services.AddValidatorsFromAssembly(assembly);
-
+// Data Services
 builder.Services.AddMarten(opts =>
 {
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
@@ -35,8 +36,25 @@ builder.Services.AddStackExchangeRedisCache(options =>
     // options.InstanceName = "Basket";
 });
 
-builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+//Grpc Services
+builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
+        
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+    var handler = new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback =
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
 
+    return handler;
+});
+
+//Cross-Cutting Services
+builder.Services.AddValidatorsFromAssembly(assembly);
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
     .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
