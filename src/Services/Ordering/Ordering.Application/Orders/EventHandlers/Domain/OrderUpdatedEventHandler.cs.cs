@@ -1,10 +1,6 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
-using Ordering.Domain.Events;
+﻿namespace Ordering.Application.Orders.EventHandlers.Domain;
 
-namespace Ordering.Application.Orders.EventHandlers;
-
-public class OrderCreatedEventHandler(ILogger<OrderCreatedEventHandler> logger)
+public class OrderUpdatedEventHandler(ILogger<OrderUpdatedEventHandler> logger)
     : INotificationHandler<OrderUpdatedEvent>
 {
     public Task Handle(OrderUpdatedEvent notification, CancellationToken cancellationToken)
